@@ -2,9 +2,7 @@ package rx
 
 // TakeWhile takes values from the source channel while the predicate function returns false
 func TakeWhile[T any](c <-chan T, pred func(value T, index int) (bool, error), options ...Option) (<-chan T, <-chan error) {
-	opts := parseOption(options...)
-	out := make(chan T, opts.bufferSize)
-	errs := make(chan error)
+	out, errs := observableChWithErrs[T](options...)
 
 	go func() {
 		defer close(out)
@@ -34,8 +32,7 @@ func TakeWhile[T any](c <-chan T, pred func(value T, index int) (bool, error), o
 // Take takes the first n values from the source channel and emits them to the output rx.
 // If the source channel emits less than n values, the output channel will close after emitting all values
 func Take[T any](c <-chan T, n int, options ...Option) <-chan T {
-	opts := parseOption(options...)
-	out := make(chan T, opts.bufferSize)
+	out := observableCh[T](options...)
 
 	go func() {
 		defer close(out)
@@ -56,9 +53,7 @@ func Take[T any](c <-chan T, n int, options ...Option) <-chan T {
 
 // Filter filters the values from the source channel based on the predicate function.
 func Filter[T any](c <-chan T, pred func(value T, index int) (bool, error), options ...Option) (<-chan T, <-chan error) {
-	opts := parseOption(options...)
-	out := make(chan T, opts.bufferSize)
-	errs := make(chan error)
+	out, errs := observableChWithErrs[T](options...)
 
 	go func() {
 		defer close(out)

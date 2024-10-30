@@ -6,9 +6,7 @@ import (
 
 // Reduce reduces the values from the source channel into a single value that emit when the source channel closed using the reducer function
 func Reduce[T any, R any](c <-chan T, reducer func(acc R, cur T, index int) (R, error), seed R, options ...Option) (<-chan R, <-chan error) {
-	opts := parseOption(options...)
-	out := make(chan R, opts.bufferSize)
-	errs := make(chan error)
+	out, errs := observableChWithErrs[R](options...)
 
 	go func() {
 		defer close(out)

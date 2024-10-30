@@ -2,8 +2,7 @@ package rx
 
 // BufferCount buffers the source channel values until the buffer size is reached, then emits the buffer and starts a new buffer
 func BufferCount[T any](c <-chan T, n int, option ...Option) <-chan []T {
-	opts := parseOption(option...)
-	out := make(chan []T, opts.bufferSize)
+	out := observableCh[[]T](option...)
 
 	go func() {
 		defer close(out)
@@ -27,9 +26,7 @@ func BufferCount[T any](c <-chan T, n int, option ...Option) <-chan []T {
 
 // Map transforms the values from the source channel using the provided function
 func Map[T any, R any](c <-chan T, iter func(value T, index int) (R, error), options ...Option) (<-chan R, <-chan error) {
-	opts := parseOption(options...)
-	out := make(chan R, opts.bufferSize)
-	errs := make(chan error)
+	out, errs := observableChWithErrs[R](options...)
 
 	go func() {
 		defer close(out)
@@ -56,9 +53,7 @@ func Map[T any, R any](c <-chan T, iter func(value T, index int) (R, error), opt
 // Scan transforms the values from the source channel using the provided accumulator function (or reducer function).
 // Like Reduce, but emits values every time the source channel emits a value.
 func Scan[T any, R any](c <-chan T, accumulator func(acc R, cur T, index int) (R, error), seed R, options ...Option) (<-chan R, <-chan error) {
-	opts := parseOption(options...)
-	out := make(chan R, opts.bufferSize)
-	errs := make(chan error)
+	out, errs := observableChWithErrs[R](options...)
 
 	go func() {
 		defer close(out)
@@ -86,9 +81,7 @@ func Scan[T any, R any](c <-chan T, accumulator func(acc R, cur T, index int) (R
 
 // MergeMap transforms the values from the source channel to another channel using the provided function and MergeAll them
 func MergeMap[T any, R any](c <-chan T, iter func(value T, index int) (<-chan R, <-chan error), options ...Option) (<-chan R, <-chan error) {
-	opts := parseOption(options...)
-	out := make(chan R, opts.bufferSize)
-	errs := make(chan error)
+	out, errs := observableChWithErrs[R](options...)
 
 	outChs := make(chan (<-chan R))
 	errsChs := make(chan (<-chan error))
@@ -128,9 +121,7 @@ func MergeMap[T any, R any](c <-chan T, iter func(value T, index int) (<-chan R,
 
 // SwitchMap transforms the values from the source channel to another channel using the provided function and SwitchAll them
 func SwitchMap[T any, R any](c <-chan T, iter func(value T, index int) (<-chan R, <-chan error), options ...Option) (<-chan R, <-chan error) {
-	opts := parseOption(options...)
-	out := make(chan R, opts.bufferSize)
-	errs := make(chan error)
+	out, errs := observableChWithErrs[R](options...)
 
 	outChs := make(chan (<-chan R))
 	errsChs := make(chan (<-chan error))

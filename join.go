@@ -4,8 +4,7 @@ import "sync"
 
 // MergeAll merges all emitting channels into one by merging their emission
 func MergeAll[T any](cs <-chan (<-chan T), options ...Option) <-chan T {
-	opts := parseOption(options...)
-	out := make(chan T, opts.bufferSize)
+	out := observableCh[T](options...)
 
 	wg := new(sync.WaitGroup)
 	wg.Add(1) // for loop cs job
@@ -39,8 +38,7 @@ func MergeAll[T any](cs <-chan (<-chan T), options ...Option) <-chan T {
 // SwitchAll merges all emitting channels into one by merging their emission.
 // It will immediately switch to the current emitting rx.
 func SwitchAll[T any](cs <-chan (<-chan T), options ...Option) <-chan T {
-	opts := parseOption(options...)
-	out := make(chan T, opts.bufferSize)
+	out := observableCh[T](options...)
 
 	wg := new(sync.WaitGroup)
 	wg.Add(1) // for loop cs job

@@ -6,8 +6,7 @@ import (
 
 // Merge creates a channel that merges multiple channels into one by merging their emission
 func Merge[T any](cs []<-chan T, options ...Option) <-chan T {
-	opts := parseOption(options...)
-	out := make(chan T, opts.bufferSize)
+	out := observableCh[T](options...)
 
 	wg := new(sync.WaitGroup)
 	wg.Add(len(cs))

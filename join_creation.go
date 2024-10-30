@@ -31,3 +31,8 @@ func Merge[T any](cs []<-chan T, options ...Option) <-chan T {
 
 	return out
 }
+
+// MergeErrs creates a channel that merges multiple error channels into one by merging their emission
+func MergeErrs(errChs ...<-chan error) <-chan error {
+	return Merge(errChs)
+}

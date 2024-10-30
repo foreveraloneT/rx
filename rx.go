@@ -1,4 +1,4 @@
-// package rx provide utility functions for channel inspired by RX: https://rxjs.dev/guide/operators
+// Package rx provide utility functions for channel inspired by RX: https://rxjs.dev/guide/operators
 package rx
 
 import (
@@ -80,10 +80,7 @@ LOOP:
 
 // Observable creates value channel and error channel and operate them follow observe function
 func Observable[T any](observe func(observer Observer[T]), options ...Option) (<-chan T, <-chan error) {
-	opts := parseOption(options...)
-
-	out := make(chan T, opts.bufferSize)
-	errs := make(chan error, opts.bufferSize)
+	out, errs := observableChWithErrs[T](options...)
 	done := make(chan struct{})
 
 	isDone := new(atomic.Bool)
@@ -127,4 +124,14 @@ func Observable[T any](observe func(observer Observer[T]), options ...Option) (<
 	}()
 
 	return out, errs
+}
+
+func observableChWithErrs[T any](options ...Option) (chan T, chan error) {
+	return observableCh[T](options...), make(chan error)
+}
+
+func observableCh[T any](options ...Option) chan T {
+	opts := parseOption(options...)
+
+	return make(chan T, opts.bufferSize)
 }

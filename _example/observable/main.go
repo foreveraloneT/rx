@@ -1,4 +1,4 @@
-// package main is the entry point of the program
+// Package main is the entry point of the program
 package main
 
 import (

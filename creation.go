@@ -38,6 +38,13 @@ func From[T any](vv []T, options ...Option) <-chan T {
 	return out
 }
 
+// Of creates a channel that emits the provided values.
+// Please note that this function is not receive Option, so the channel is always no buffer.
+// If you want to set buffer size, please use From function instead
+func Of[T any](vv ...T) <-chan T {
+	return From(vv)
+}
+
 // Range creates a channel that emits a range of integers
 func Range(start int, count int, options ...Option) <-chan int {
 	out := observableCh[int](options...)

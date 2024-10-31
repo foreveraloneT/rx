@@ -19,14 +19,14 @@ func main() {
 
 	})
 
-	rx.Observe(out1, nil, rx.Observer[int]{
+	rx.Observe(rx.Observer[int]{
 		Next: func(v int) {
 			println("value: ", v)
 		},
 		Done: func() {
 			println("Example 1 done")
 		},
-	})
+	}, out1)
 
 	println("example 2: error handler")
 	ch2 := rx.Take(rx.Interval(1*time.Second), 10)
@@ -42,12 +42,12 @@ func main() {
 
 	})
 
-	rx.Observe(out2, errs, rx.Observer[int]{
+	rx.Observe(rx.Observer[int]{
 		Next: func(v int) {
 			println("value: ", v)
 		},
 		Err: func(err error) {
 			println("error: ", err.Error())
 		},
-	})
+	}, out2, errs)
 }

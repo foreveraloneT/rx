@@ -42,7 +42,7 @@ func main() {
 		return acc + cur, nil
 	}, 0)
 
-	rx.Observe(out3, errs, rx.Observer[int]{
+	rx.Observe(rx.Observer[int]{
 		Next: func(v int) {
 			println("value: ", v)
 		},
@@ -52,5 +52,5 @@ func main() {
 		Done: func() {
 			println("Observation done")
 		},
-	})
+	}, out3, errs)
 }

@@ -106,14 +106,14 @@ func MergeMap[T any, R any](c <-chan T, iter func(value T, index int) (<-chan R,
 		defer close(out)
 		defer close(errs)
 
-		Observe(flattenOut, flattenErrs, Observer[R]{
+		Observe(Observer[R]{
 			Next: func(v R) {
 				out <- v
 			},
 			Err: func(err error) {
 				errs <- err
 			},
-		})
+		}, flattenOut, flattenErrs)
 	}()
 
 	return out, errs
@@ -146,14 +146,62 @@ func SwitchMap[T any, R any](c <-chan T, iter func(value T, index int) (<-chan R
 		defer close(out)
 		defer close(errs)
 
-		Observe(flattenOut, flattenErrs, Observer[R]{
+		Observe(Observer[R]{
 			Next: func(v R) {
 				out <- v
 			},
 			Err: func(err error) {
 				errs <- err
 			},
-		})
+		}, flattenOut, flattenErrs)
+	}()
+
+	return out, errs
+}
+
+// GroupByObserver represents a result of GroupBy
+type GroupByObserver[T any, K any] struct {
+	Val <-chan T
+	Key K
+}
+
+// GroupBy groups the values from the source channel based on the keySelector function
+func GroupBy[T any, K comparable](c <-chan T, keySelector func(v T, index int) (K, error), options ...Option) (<-chan GroupByObserver[T, K], chan error) {
+	out, errs := observableChWithErrs[GroupByObserver[T, K]](options...)
+
+	go func() {
+		defer close(out)
+		defer close(errs)
+
+		groups := make(map[K]chan T)
+		defer func(groups map[K]chan T) {
+			for _, group := range groups {
+				close(group)
+			}
+		}(groups)
+
+		index := 0
+		for v := range c {
+			key, err := keySelector(v, index)
+			if err != nil {
+				errs <- err
+
+				return
+			}
+
+			if _, ok := groups[key]; !ok {
+				groups[key] = observableCh[T](options...)
+
+				out <- GroupByObserver[T, K]{
+					Val: groups[key],
+					Key: key,
+				}
+			}
+
+			groups[key] <- v
+
+			index++
+		}
 	}()
 
 	return out, errs

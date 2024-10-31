@@ -53,12 +53,12 @@ func main() {
 		observer.Err(fmt.Errorf("error appeared #2"))
 	})
 
-	rx.Observe(out2, errs, rx.Observer[int]{
+	rx.Observe(rx.Observer[int]{
 		Next: func(v int) {
 			fmt.Println("value:", v)
 		},
 		Err: func(err error) {
 			fmt.Println("error:", err)
 		},
-	})
+	}, out2, errs)
 }

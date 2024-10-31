@@ -2,7 +2,9 @@
 package rx
 
 import (
-	"sync/atomic"
+	"sync"
+
+	"go.uber.org/atomic"
 )
 
 type config struct {
@@ -47,35 +49,64 @@ type Observer[T any] struct {
 
 // Observe observes the values from the source channel and error channel and handles them using the provided observer functions
 func Observe[T any](
-	c <-chan T,
-	errs <-chan error,
 	observer Observer[T],
-) {
-LOOP:
-	for {
-		select {
-		case v, ok := <-c:
-			if !ok {
-				if observer.Done != nil {
-					observer.Done()
+	c <-chan T,
+	errChs ...<-chan error,
+) error {
+	wg := new(sync.WaitGroup)
+	wg.Add(1 + len(errChs))
+
+	globalErr := new(atomic.Error)
+
+	processErrs := func(errs <-chan error) {
+		defer wg.Done()
+
+		for err := range errs {
+			if err != nil {
+				if globalErr.Load() != nil {
+					return
 				}
 
-				break LOOP
+				if observer.Err != nil {
+					globalErr.Store(err)
+					observer.Err(err)
+
+					return
+				}
+			}
+		}
+	}
+
+	for _, errs := range errChs {
+		go processErrs(errs)
+	}
+
+	go func() {
+		defer wg.Done()
+
+		for v := range c {
+			if globalErr.Load() != nil {
+				break
 			}
 
 			if observer.Next != nil {
 				observer.Next(v)
 			}
-		case err := <-errs:
-			if err != nil {
-				if observer.Err != nil {
-					observer.Err(err)
-				}
-
-				break LOOP
-			}
 		}
+	}()
+
+	wg.Wait()
+
+	err := globalErr.Load()
+	if err != nil {
+		return err
 	}
+
+	if observer.Done != nil {
+		observer.Done()
+	}
+
+	return nil
 }
 
 // Observable creates value channel and error channel and operate them follow observe function

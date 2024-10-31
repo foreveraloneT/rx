@@ -1,6 +1,8 @@
 package rx
 
-import "sync"
+import (
+	"sync"
+)
 
 // MergeAll merges all emitting channels into one by merging their emission
 func MergeAll[T any](cs <-chan (<-chan T), options ...Option) <-chan T {

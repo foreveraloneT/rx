@@ -19,12 +19,12 @@ func main() {
 		return v%2 != 0, nil
 	})
 
-	rx.Observe(out, nil, rx.Observer[int]{
+	rx.Observe(rx.Observer[int]{
 		Next: func(v int) {
 			println("value: ", v)
 		},
 		Done: func() {
 			println("channel closed")
 		},
-	})
+	}, out)
 }

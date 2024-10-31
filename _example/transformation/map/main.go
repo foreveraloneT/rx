@@ -19,7 +19,7 @@ func main() {
 		println("value: ", v)
 	}
 
-	println("example 2")
+	println("example 2: delay")
 	ch2 := newSourceCh()
 	out2, _ := rx.Map(ch2, func(v int, _ int) (string, error) {
 		// simulate a slow operation

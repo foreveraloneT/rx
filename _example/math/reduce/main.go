@@ -19,7 +19,7 @@ func main() {
 		println("value: ", v)
 	}
 
-	println("example 2")
+	println("example 2: delay")
 	ch2 := rx.Range(1, 5)
 	out2, _ := rx.Reduce(ch2, func(acc int, cur int, _ int) (int, error) {
 		// simulate a slow operation

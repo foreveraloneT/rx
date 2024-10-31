@@ -51,17 +51,16 @@ func SwitchAll[T any](cs <-chan (<-chan T), options ...Option) <-chan T {
 		go func() {
 			defer wg.Done()
 
-		LOOP:
 			for {
 				select {
 				case v, ok := <-c:
 					if !ok {
-						break LOOP
+						return
 					}
 
 					out <- v
 				case <-terminate:
-					break LOOP
+					return
 				}
 			}
 		}()
@@ -75,7 +74,7 @@ func SwitchAll[T any](cs <-chan (<-chan T), options ...Option) <-chan T {
 		var terminate chan<- struct{}
 		for c := range cs {
 			if terminate != nil {
-				terminate <- struct{}{}
+				close(terminate)
 			}
 
 			wg.Add(1)

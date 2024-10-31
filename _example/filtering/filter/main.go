@@ -44,20 +44,17 @@ func main() {
 		return v%2 == 0, nil
 	})
 
-LOOP:
-	for {
-		select {
-		case v, ok := <-out3:
-			if !ok {
-				break LOOP
-			}
+	rx.Observe(rx.Observer[int]{
+		Next: func(v int) {
 			println("value: ", v)
-		case err := <-errs:
-			if err != nil {
-				println("error: ", err.Error())
-			}
-		}
-	}
+		},
+		Err: func(err error) {
+			println("error: ", err.Error())
+		},
+		Done: func() {
+			println("Example 3 done")
+		},
+	}, out3, errs)
 }
 
 func newSourceCh() <-chan int {

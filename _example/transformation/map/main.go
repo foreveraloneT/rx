@@ -44,20 +44,14 @@ func main() {
 		return fmt.Sprintf("%04d", v+1), nil
 	})
 
-LOOP:
-	for {
-		select {
-		case v, ok := <-out3:
-			if !ok {
-				break LOOP
-			}
+	rx.Observe(rx.Observer[string]{
+		Next: func(v string) {
 			println("value: ", v)
-		case err := <-errs:
-			if err != nil {
-				println("error: ", err.Error())
-			}
-		}
-	}
+		},
+		Err: func(err error) {
+			println("error: ", err.Error())
+		},
+	}, out3, errs)
 }
 
 func newSourceCh() <-chan int {

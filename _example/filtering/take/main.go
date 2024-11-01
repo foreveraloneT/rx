@@ -8,6 +8,12 @@ import (
 )
 
 func main() {
+	example1()
+}
+
+func example1() {
+	println("Example 1")
+
 	ch := rx.Take(rx.Interval(1*time.Second), 5)
 
 	for v := range ch {

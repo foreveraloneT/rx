@@ -20,6 +20,12 @@ type group[T any] struct {
 }
 
 func main() {
+	example1()
+}
+
+func example1() {
+	println("Example 1")
+
 	source := newSource()
 	grouped, errs1 := rx.GroupBy(source, func(v programmingTool, _ int) (string, error) {
 		return v.Type, nil

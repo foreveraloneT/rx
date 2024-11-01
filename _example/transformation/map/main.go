@@ -9,7 +9,14 @@ import (
 )
 
 func main() {
-	println("example 1")
+	example1()
+	example2()
+	example3()
+}
+
+func example1() {
+	println("Example 1")
+
 	ch1 := newSourceCh()
 	out1, _ := rx.Map(ch1, func(v int, _ int) (string, error) {
 		return fmt.Sprintf("%04d", v+1), nil
@@ -18,8 +25,11 @@ func main() {
 	for v := range out1 {
 		println("value: ", v)
 	}
+}
 
-	println("example 2: delay")
+func example2() {
+	println("Example 2: delay")
+
 	ch2 := newSourceCh()
 	out2, _ := rx.Map(ch2, func(v int, _ int) (string, error) {
 		// simulate a slow operation
@@ -30,8 +40,11 @@ func main() {
 	for v := range out2 {
 		println("value: ", v)
 	}
+}
 
-	println("example 3: error handling")
+func example3() {
+	println("Example 3: error handling")
+
 	ch3 := newSourceCh()
 	out3, errs := rx.Map(ch3, func(v int, _ int) (string, error) {
 		// simulate a slow operation

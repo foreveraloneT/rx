@@ -9,7 +9,12 @@ import (
 )
 
 func main() {
-	println("example #1")
+	example1()
+	example2()
+}
+
+func example1() {
+	println("Example 1")
 	out1, _ := rx.Observable[string](func(observer rx.Observer[string]) {
 		defer observer.Done()
 
@@ -35,8 +40,11 @@ func main() {
 	for v := range out1 {
 		fmt.Println("value:", v)
 	}
+}
 
-	println("example #2 with error")
+func example2() {
+	println("Example 2: with error")
+
 	out2, errs := rx.Observable[int](func(observer rx.Observer[int]) {
 		defer observer.Done()
 

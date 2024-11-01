@@ -8,6 +8,12 @@ import (
 )
 
 func main() {
+	example1()
+}
+
+func example1() {
+	println("Example 1")
+
 	ch := rx.From(
 		strings.Split("Hello, world. My name is Kala", " "),
 		rx.WithBufferSize(2),

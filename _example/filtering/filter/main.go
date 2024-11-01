@@ -9,7 +9,14 @@ import (
 )
 
 func main() {
+	example1()
+	example2()
+	example3()
+}
+
+func example1() {
 	println("example 1")
+
 	ch1 := newSourceCh()
 	out1, _ := rx.Filter(ch1, func(v int, _ int) (bool, error) {
 		return v%2 == 0, nil
@@ -18,8 +25,11 @@ func main() {
 	for v := range out1 {
 		println("value: ", v)
 	}
+}
 
+func example2() {
 	println("example 2: delay")
+
 	ch2 := newSourceCh()
 	out2, _ := rx.Filter(ch2, func(v int, _ int) (bool, error) {
 		// simulate a slow operation
@@ -30,8 +40,11 @@ func main() {
 	for v := range out2 {
 		println("value: ", v)
 	}
+}
 
+func example3() {
 	println("example 3: error handling")
+
 	ch3 := newSourceCh()
 	out3, errs := rx.Filter(ch3, func(v int, _ int) (bool, error) {
 		// simulate a slow operation

@@ -6,6 +6,12 @@ import (
 )
 
 func main() {
+	example1()
+}
+
+func example1() {
+	println("Example 1")
+
 	ch := rx.Range(1, 10)
 
 	for v := range ch {

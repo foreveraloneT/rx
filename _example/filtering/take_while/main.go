@@ -8,6 +8,12 @@ import (
 )
 
 func main() {
+	example1()
+}
+
+func example1() {
+	println("Example 1")
+
 	source := rx.From([]int{1, 3, 5, 7, 9, 10, 11})
 	tmp, _ := rx.Map(source, func(v int, _ int) (int, error) {
 		<-time.After(1000 * time.Millisecond)

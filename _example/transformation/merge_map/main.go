@@ -19,7 +19,7 @@ func example1() {
 	ch1 := rx.Take(rx.Interval(1*time.Second), 10)
 	out1, _ := rx.MergeMap(ch1, func(v int, _ int) (<-chan int, <-chan error) {
 		return rx.Map(rx.From([]int{1, 10, 100}), func(w int, _ int) (int, error) {
-			<-time.After(200 * time.Millisecond)
+			<-time.After(400 * time.Millisecond)
 			return w * (v + 1), nil
 		})
 
@@ -41,7 +41,7 @@ func example2() {
 	ch2 := rx.Take(rx.Interval(1*time.Second), 10)
 	out2, errs := rx.MergeMap(ch2, func(v int, _ int) (<-chan int, <-chan error) {
 		return rx.Map(rx.From([]int{1, 10, 100}), func(w int, _ int) (int, error) {
-			<-time.After(200 * time.Millisecond)
+			<-time.After(400 * time.Millisecond)
 			if v == 4 && w == 10 {
 				return 0, fmt.Errorf("process error at v = %d, w = %d", v, w)
 			}

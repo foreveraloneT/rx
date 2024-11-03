@@ -1,0 +1,33 @@
+{
+  "Example function": {
+    "prefix": "funcex",
+    "scope": "go",
+    "body": [
+      "func example$1() {",
+      "\tprintln(\"Example $1\")",
+      "",
+      "\t$0",
+      "}",
+      ""
+    ]
+  },
+  "New example": {
+    "prefix": "newex",
+    "scope": "go",
+    "body": [
+      "// Package main is the entry point of the program",
+      "package main",
+      "",
+      "func main() {",
+      "\texample1()",
+      "}",
+      "",
+      "func example1() {",
+      "\tprintln(\"Example 1\")",
+      "",
+      "\t$0",
+      "}",
+      ""
+    ]
+  }
+}

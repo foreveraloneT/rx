@@ -15,14 +15,20 @@ type Option func(*config)
 // WithBufferSize sets the buffer size of the channel
 func WithBufferSize(size int) Option {
 	return func(c *config) {
-		if size > 0 {
+		if size >= 0 {
 			c.bufferSize = size
 		}
 	}
 }
 
+func defaultConfig() *config {
+	return &config{
+		bufferSize: 0,
+	}
+}
+
 func parseOption(opts ...Option) *config {
-	c := new(config)
+	c := defaultConfig()
 
 	for _, opt := range opts {
 		opt(c)
@@ -31,12 +37,8 @@ func parseOption(opts ...Option) *config {
 	return c
 }
 
-func resultCh[T any](defaultBufferSize int, opts ...Option) chan Result[T] {
+func resultCh[T any](opts ...Option) chan Result[T] {
 	c := parseOption(opts...)
-
-	if c.bufferSize == 0 {
-		c.bufferSize = defaultBufferSize
-	}
 
 	return make(chan Result[T], c.bufferSize)
 }
@@ -50,7 +52,7 @@ type Observer[T any] struct {
 
 // Observable creates an Result channel with the given observer function
 func Observable[T any](observe func(observer Observer[T]), options ...Option) <-chan Result[T] {
-	results := resultCh[T](0, options...)
+	results := resultCh[T](options...)
 	isDone := new(atomic.Bool)
 	done := make(chan struct{})
 
@@ -117,4 +119,12 @@ func Observe[T any](results <-chan Result[T], observer Observer[T]) error {
 	}
 
 	return nil
+}
+
+func prepend[T any](v T, slice []T) []T {
+	out := make([]T, 0, len(slice)+1)
+	out = append(out, v)
+	out = append(out, slice...)
+
+	return out
 }

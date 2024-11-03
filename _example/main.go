@@ -51,10 +51,10 @@ func example2() {
 		defer observer.Done()
 
 		observer.Next(1)
-		<-time.After(500 * time.Millisecond)
+		<-time.After(1000 * time.Millisecond)
 
 		observer.Next(2)
-		<-time.After(500 * time.Millisecond)
+		<-time.After(1000 * time.Millisecond)
 
 		observer.Err(fmt.Errorf("error appeared #1"))
 
@@ -82,10 +82,10 @@ func example3() {
 		defer observer.Done()
 
 		observer.Next(1)
-		<-time.After(500 * time.Millisecond)
+		<-time.After(1000 * time.Millisecond)
 
 		observer.Next(2)
-		<-time.After(500 * time.Millisecond)
+		<-time.After(1000 * time.Millisecond)
 
 		observer.Err(fmt.Errorf("error appeared #1"))
 

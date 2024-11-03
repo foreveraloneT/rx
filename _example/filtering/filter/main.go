@@ -12,6 +12,7 @@ func main() {
 	example1()
 	example2()
 	example3()
+	example4()
 }
 
 func example1() {
@@ -71,4 +72,10 @@ func example3() {
 			println("error: ", err.Error())
 		},
 	})
+}
+
+func example4() {
+	println("Example 4: error emitted from source channel")
+
+	// TODO: implement example4
 }

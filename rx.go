@@ -1,10 +1,6 @@
 // Package rx provide utility functions for channel inspired by RX: https://rxjs.dev/guide/operators
 package rx
 
-import (
-	"sync/atomic"
-)
-
 type config struct {
 	bufferSize int
 }
@@ -53,34 +49,20 @@ type Observer[T any] struct {
 // Observable creates an Result channel with the given observer function
 func Observable[T any](observe func(observer Observer[T]), options ...Option) <-chan Result[T] {
 	results := resultCh[T](options...)
-	isDone := new(atomic.Bool)
+	tmp := resultCh[T](options...)
 	done := make(chan struct{})
 
 	go func() {
+		defer close(tmp)
+
 		observer := Observer[T]{
 			Next: func(value T) {
-				if isDone.Load() {
-					return
-				}
-
-				results <- Ok(value)
+				tmp <- Ok(value)
 			},
 			Err: func(err error) {
-				if isDone.Load() {
-					return
-				}
-
-				results <- Err[T](err)
-
-				isDone.Store(true)
-				close(done)
+				tmp <- Err[T](err)
 			},
 			Done: func() {
-				if isDone.Load() {
-					return
-				}
-
-				isDone.Store(true)
 				close(done)
 			},
 		}
@@ -91,7 +73,21 @@ func Observable[T any](observe func(observer Observer[T]), options ...Option) <-
 	go func() {
 		defer close(results)
 
-		<-done
+		for {
+			select {
+			case v, ok := <-tmp:
+				if !ok {
+					return
+				}
+
+				results <- v
+				if v.IsError() {
+					return
+				}
+			case <-done:
+				return
+			}
+		}
 	}()
 
 	return results

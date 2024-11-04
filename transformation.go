@@ -172,3 +172,37 @@ func GroupBy[T any, K comparable](source <-chan Result[T], keySelector func(v T,
 
 	return results
 }
+
+// Scan transforms the values from the source channel using the provided accumulator function (or reducer function).
+// Like Reduce, but emits values every time the source channel emits a value.
+func Scan[T any, R any](source <-chan Result[T], reducer func(acc R, cur T, index int) (R, error), seed R, options ...Option) <-chan Result[R] {
+	results := resultCh[R](prepend(WithBufferSize(cap(source)), options)...)
+
+	go func() {
+		defer close(results)
+
+		acc := seed
+		index := 0
+		for v := range source {
+			value, err := v.Get()
+			if err != nil {
+				results <- Err[R](err)
+
+				return
+			}
+
+			acc, err = reducer(acc, value, index)
+			if err != nil {
+				results <- Err[R](err)
+
+				return
+			}
+
+			results <- Ok(acc)
+
+			index++
+		}
+	}()
+
+	return results
+}

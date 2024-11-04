@@ -43,6 +43,37 @@ func Take[T any](source <-chan Result[T], n int, options ...Option) <-chan Resul
 	}, options...)
 }
 
+// TakeLast takes the last n values from the source channel and emits them to the output when source channel closed
+func TakeLast[T any](source <-chan Result[T], n int, options ...Option) <-chan Result[T] {
+	results := resultCh[T](options...)
+
+	go func() {
+		defer close(results)
+
+		buffer := make([]T, 0, n)
+		for v := range source {
+			value, err := v.Get()
+			if err != nil {
+				results <- Err[T](err)
+
+				return
+			}
+
+			if len(buffer) == n {
+				buffer = buffer[1:]
+			}
+
+			buffer = append(buffer, value)
+		}
+
+		for _, v := range buffer {
+			results <- Ok(v)
+		}
+	}()
+
+	return results
+}
+
 // Filter emits values from the source channel that pass the predicate function
 func Filter[T any](source <-chan Result[T], predicate func(value T, index int) (bool, error), options ...Option) <-chan Result[T] {
 	results := resultCh[T](prepend(WithBufferSize(cap(source)), options)...)

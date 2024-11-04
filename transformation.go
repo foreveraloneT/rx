@@ -64,8 +64,13 @@ func Map[T any, R any](source <-chan Result[T], mapper func(value T, index int) 
 	return results
 }
 
-// MergeMap transforms the values from the source channel to another channel using the provided mapper and `MergeAll` them
-func MergeMap[T any, R any](source <-chan Result[T], mapper func(value T, index int) <-chan Result[R], options ...Option) <-chan Result[R] {
+// FlatMap transforms the values from the source channel to another channel using the provided mapper and joins them using the provided join function
+func FlatMap[T any, R any](
+	source <-chan Result[T],
+	mapper func(value T, index int) <-chan Result[R],
+	joinFn func(sources <-chan Result[<-chan Result[R]], options ...Option) <-chan Result[R],
+	options ...Option,
+) <-chan Result[R] {
 	finalOptions := prepend(WithBufferSize(cap(source)), options)
 	sources := resultCh[<-chan Result[R]](finalOptions...)
 
@@ -88,34 +93,17 @@ func MergeMap[T any, R any](source <-chan Result[T], mapper func(value T, index 
 		}
 	}()
 
-	return MergeAll(sources, finalOptions...)
+	return joinFn(sources, finalOptions...)
+}
+
+// MergeMap transforms the values from the source channel to another channel using the provided mapper and `MergeAll` them
+func MergeMap[T any, R any](source <-chan Result[T], mapper func(value T, index int) <-chan Result[R], options ...Option) <-chan Result[R] {
+	return FlatMap[T, R](source, mapper, MergeAll, options...)
 }
 
 // SwitchMap transforms the values from the source channel to another channel using the provided function and `SwitchAll` them
 func SwitchMap[T any, R any](source <-chan Result[T], mapper func(value T, index int) <-chan Result[R], options ...Option) <-chan Result[R] {
-	finalOptions := prepend(WithBufferSize(cap(source)), options)
-	sources := resultCh[<-chan Result[R]](finalOptions...)
-
-	go func() {
-		defer close(sources)
-
-		index := 0
-		for v := range source {
-			value, err := v.Get()
-			if err != nil {
-				sources <- Err[<-chan Result[R]](err)
-
-				return
-			}
-
-			out := mapper(value, index)
-			sources <- Ok(out)
-
-			index++
-		}
-	}()
-
-	return SwitchAll(sources, finalOptions...)
+	return FlatMap[T, R](source, mapper, SwitchAll, options...)
 }
 
 // GroupedResults represents a return value of `GroupBy` function

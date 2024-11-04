@@ -48,3 +48,24 @@ func Merge[T any](sources []<-chan Result[T], options ...Option) <-chan Result[T
 
 	return results
 }
+
+// Concat creates a new channel that will concatenate the results of the given sources
+func Concat[T any](sources []<-chan Result[T], options ...Option) <-chan Result[T] {
+	results := resultCh[T](options...)
+
+	go func() {
+		defer close(results)
+
+		for _, source := range sources {
+			for v := range source {
+				results <- v
+
+				if v.IsError() {
+					return
+				}
+			}
+		}
+	}()
+
+	return results
+}

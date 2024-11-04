@@ -142,3 +142,32 @@ func SwitchAll[T any](sources <-chan Result[<-chan Result[T]], options ...Option
 
 	return results
 }
+
+// ConcatAll merges all emitting channels into one by concatenating their emission
+func ConcatAll[T any](sources <-chan Result[<-chan Result[T]], options ...Option) <-chan Result[T] {
+	finalOptions := prepend(WithBufferSize(cap(sources)), options)
+	results := resultCh[T](finalOptions...)
+
+	go func() {
+		defer close(results)
+
+		for v := range sources {
+			source, err := v.Get()
+			if err != nil {
+				results <- Err[T](err)
+
+				return
+			}
+
+			for w := range source {
+				results <- w
+
+				if w.IsError() {
+					return
+				}
+			}
+		}
+	}()
+
+	return results
+}

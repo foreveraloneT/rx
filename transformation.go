@@ -106,6 +106,11 @@ func SwitchMap[T any, R any](source <-chan Result[T], mapper func(value T, index
 	return FlatMap[T, R](source, mapper, SwitchAll, options...)
 }
 
+// ConcatMap transforms the values from the source channel to another channel using the provided function and `ConcatAll` them
+func ConcatMap[T any, R any](source <-chan Result[T], mapper func(value T, index int) <-chan Result[R], options ...Option) <-chan Result[R] {
+	return FlatMap[T, R](source, mapper, ConcatAll, options...)
+}
+
 // GroupedResults represents a return value of `GroupBy` function
 type GroupedResults[T any, K comparable] struct {
 	Results <-chan Result[T]
